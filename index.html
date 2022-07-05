@@ -2,6 +2,7 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>Sandscratcher</title>
     <style>
         html,body{
@@ -16,9 +17,18 @@
             height: 100%;
             overflow: hidden;
             touch-action: none;
+            text-align: center;
+            margin:0;
+            padding: 0;;
         }
         body {
-            background-color: #f0f0f0;
+            background-color: #8f563b;
+            /* background: linear-gradient(#eec39a, #8f563b); */
+        }
+        button{
+          background-color: #d9a066;
+          color:black;
+          font-weight: bold;
         }
         canvas{
             width: 600px;
@@ -28,7 +38,13 @@
             image-rendering: -moz-crisp-edges;
             image-rendering: -o-crisp-edges;
             image-rendering: pixelated;
+    width: 100%;
+    height: calc(100% - 2cm);
+    object-fit: contain; /*magic*/
             
+        }
+        button{
+          height: 1cm;
         }
     </style>
     <script src="scratcher.js" ></script>

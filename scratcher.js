@@ -58,9 +58,9 @@ function lerpColor(a, b, amount) {
 
 var color_ramp_short=[
     "#663931",
-    "8f563b",
-    "d9a066",
-    "eec39a",
+    "#8f563b",
+    "#d9a066",
+    "#eec39a",
 ];
 
 var color_ramp_long=[];
@@ -305,9 +305,7 @@ function calculate_adjustment(nib_x,nib_y){
 function onPointerDown(event) {
     
     //call drawat
-    const bb = canvas.getBoundingClientRect();
-    const x = Math.floor( (event.clientX - bb.left) / bb.width * canvas.width );
-    const y = Math.floor( (event.clientY - bb.top) / bb.height * canvas.height );
+    var [x,y] = getXY(event);
     last_x=x;
     last_y=y;
     nib_trail_x=x;
@@ -320,6 +318,29 @@ function onPointerDown(event) {
     console.log("x,y = " + x + "," + y);
     console.log("pressure = " + pressure);
     drawAt(x, y, pressure);
+}
+
+function getXY(event){
+    
+    const bb = canvas.getBoundingClientRect();
+    var client_x = event.clientX;
+    var client_y = event.clientY;
+    
+
+    var x = Math.floor( (client_x - bb.left) / bb.width * canvas.width );
+    var y = Math.floor( (client_y - bb.top) / bb.height * canvas.height );
+
+    const visible_box_ratio = bb.width/bb.height;
+    if (visible_box_ratio > CANVAS_WIDTH/CANVAS_HEIGHT)
+     {
+        const horizontal_scale = visible_box_ratio/(CANVAS_WIDTH/CANVAS_HEIGHT);
+         x=CANVAS_WIDTH/2+ (x-CANVAS_WIDTH/2)*horizontal_scale;
+     } else {
+        const vertical_scale = (CANVAS_WIDTH/CANVAS_HEIGHT)/visible_box_ratio;
+        y=CANVAS_HEIGHT/2+ (y-CANVAS_HEIGHT/2)*vertical_scale;
+     }
+
+    return[x,y];
 }
 
 function drawTo(x,y,pressure){
@@ -357,9 +378,8 @@ function onPointerMove(event) {
     if (!event.buttons) {
         return;
     }
-    const bb = canvas.getBoundingClientRect();
-    const x = Math.floor( (event.clientX - bb.left) / bb.width * canvas.width );
-    const y = Math.floor( (event.clientY - bb.top) / bb.height * canvas.height );
+
+    var [x,y] = getXY(event);
 
     var pressure = event.pressure;
     if (pressure===0){
@@ -369,10 +389,15 @@ function onPointerMove(event) {
     drawTo(x,y,pressure);
 
 }
+
 function onPointerUp(event) {
-    const bb = canvas.getBoundingClientRect();
-    const x = Math.floor( (event.clientX - bb.left) / bb.width * canvas.width );
-    const y = Math.floor( (event.clientY - bb.top) / bb.height * canvas.height );
+
+    var [x,y] = getXY(event);
+    // else {
+    //     //portrait
+    //     client_x = client_x - bb.width/2;
+    //     client_y = client_y - bb.height/2;
+    // }
 
     var pressure = event.pressure;
     if (pressure===0){
@@ -413,6 +438,10 @@ function onLoaded() {
     ctx = canvas.getContext('2d');
     CANVAS_WIDTH = canvas.width;
     CANVAS_HEIGHT = canvas.height;
+
+    
+    ctx.canvas.style.width  = window.innerWidth;
+    ctx.canvas.style.height = window.innerHeight;
 
     canvas.addEventListener('pointerdown', onPointerDown);
     canvas.addEventListener('pointermove', onPointerMove);
