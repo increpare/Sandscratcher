@@ -187,6 +187,21 @@ function moveSandGrain(i,j,nib_x,nib_y){
     }
     heightmap[i_new_floord+CANVAS_WIDTH*j_new_floord]++;
     heightmap[i+CANVAS_WIDTH*j]--;     
+    //if the new position is more than 2 higher than any neighbouring pixel, fill that neighbouring pixel instead
+    // var new_height = heightmap[i_new_floord+CANVAS_WIDTH*j_new_floord];
+    // if (new_height>heightmap[i_new_floord+1+CANVAS_WIDTH*(j_new_floord+0)]+1){
+    //     heightmap[i_new_floord+CANVAS_WIDTH*j_new_floord]--;
+    //     heightmap[i_new_floord+1+CANVAS_WIDTH*j_new_floord]++;
+    // } else if (new_height>heightmap[i_new_floord-1+CANVAS_WIDTH*(j_new_floord+0)]+1){
+    //     heightmap[i_new_floord+CANVAS_WIDTH*j_new_floord]--;
+    //     heightmap[i_new_floord-1+CANVAS_WIDTH*j_new_floord]++;
+    // } else if (new_height>heightmap[i_new_floord+0+CANVAS_WIDTH*(j_new_floord+1)]+1){
+    //     heightmap[i_new_floord+CANVAS_WIDTH*j_new_floord]--;
+    //     heightmap[i_new_floord+CANVAS_WIDTH*(j_new_floord+1)]++;
+    // }  else if (new_height>heightmap[i_new_floord+0+CANVAS_WIDTH*(j_new_floord-1)]+1){
+    //     heightmap[i_new_floord+CANVAS_WIDTH*j_new_floord]--;
+    //     heightmap[i_new_floord+CANVAS_WIDTH*(j_new_floord-1)]++;
+    // } 
 }
 
 function drawAt(x, y, pressure) {
@@ -283,8 +298,16 @@ function queue_last_points(x,y){
         nib_trail_y = y + dy*MAX_DIST/distance;
     }
 }
-function calculate_adjustment(nib_x,nib_y){
+function calculate_adjustment(nib_x,nib_y,tiltX,tiltY){
     
+    if (tiltX!==null && (tiltX!==0&&tiltY!==0)){
+        //scale tiltX from -90,90 to -2,2
+        tiltX = -tiltX*2/90;
+        tiltY = -tiltY*2/90;
+        x_adjustment = Math.pow(2,tiltX);
+        y_adjustment = Math.pow(2,tiltY);
+        return;
+    }
     //use nib_trail_x/y to adjust x/y
     var trail_dx = nib_x-nib_trail_x;
     var trail_dy = nib_y-nib_trail_y;
@@ -310,7 +333,7 @@ function onPointerDown(event) {
     last_y=y;
     nib_trail_x=x;
     nib_trail_y=y;
-    calculate_adjustment(x,y);
+    calculate_adjustment(x,y,event.pointerType==="pen"?event.tiltX:0,event.pointerType==="pen"?event.tiltY:0);
     var pressure = event.pressure;
     if (pressure===0){
         pressure=0.5;
@@ -343,7 +366,7 @@ function getXY(event){
     return[x,y];
 }
 
-function drawTo(x,y,pressure){
+function drawTo(x,y,pressure,tiltX,tiltY){
 
     //distance of x,y to last_x,last_y
     var dx = x-last_x;
@@ -357,7 +380,7 @@ function drawTo(x,y,pressure){
         last_x += dx*MAX_DIST/distance;
         last_y += dy*MAX_DIST/distance;
         
-        calculate_adjustment(last_x,last_y);
+        calculate_adjustment(x,y,tiltX,tiltY);
         drawAt(last_x, last_y, pressure);
         queue_last_points(last_x,last_y);
 
@@ -366,7 +389,7 @@ function drawTo(x,y,pressure){
         distance = Math.sqrt(dx*dx+dy*dy);
 
     }
-    calculate_adjustment(x,y);
+    calculate_adjustment(x,y,tiltX,tiltY);
     drawAt(x, y, pressure);
     queue_last_points(x,y);
 
@@ -386,7 +409,7 @@ function onPointerMove(event) {
         pressure=0.5;
     }
 
-    drawTo(x,y,pressure);
+    drawTo(x,y,pressure,event.pointerType==="pen"?event.tiltX:0,event.pointerType==="pen"?event.tiltY:0);
 
 }
 
@@ -404,7 +427,7 @@ function onPointerUp(event) {
         pressure=0.5;
     }
 
-    drawTo(x,y,event.pressure);
+    drawTo(x,y,event.pressure,event.pointerType==="pen"?event.tiltX:0,event.pointerType==="pen"?event.tiltY:0);
 }
 
 function resetPage(){
