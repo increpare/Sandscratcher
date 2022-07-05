@@ -420,6 +420,5 @@ function onLoaded() {
 
     resetPage();
 
-    onPointerDown({clientX:0,clientY:0,pressure:1});
     renderBoard();
 }
